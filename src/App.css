@@ -1,0 +1,74 @@
+.App {
+  text-align: center;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* header */
+.header{
+  text-align: center;
+}
+.header img {
+  height: 80px;
+}
+.header nav{
+  line-height:40px;
+  background-color:black;
+}
+.header nav a {
+  margin-right: 20px;
+  text-decoration: none;
+  color:white;
+  padding: 10px;
+}
+.header nav a:hover{
+  color: black;
+  background-color:gray;
+}
+
+/* Shop */
+.twin-container{
+  display: flex;
+  margin-top: 10px;
+}
+.product-container {
+  width: 70%;
+  margin-left: 60px;
+  margin-right: 5px;
+  border-right: 1px solid lightgray;
+}
+.cart-container {
+  margin-left: 5px;
+}
+
+/* product */
+.product {
+  display: flex;
+  border-bottom: 1px solid lightgray;
+  padding-bottom: 5px; 
+  margin: 0px 5px 5px 5px;
+}
+.product-description {
+  margin-left: 15px;
+}
+.product img {
+  height: 180px;
+  margin-top: 50px;
+}
+.add-to-cart{
+  background-color: goldenrod;
+  border-radius: 5px;
+  border: 1px solid black;
+  padding: 8px 100px;
+  cursor: pointer;
+}
+.product-description h4{
+  color: blue;
+}
