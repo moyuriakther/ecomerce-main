@@ -1,23 +1,18 @@
-import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  signInWithPopup,
-  GoogleAuthProvider,
-  signOut,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  updateProfile,
-  FacebookAuthProvider,
-} from "firebase/auth";
 import { useContext, useState } from "react";
 import { Button } from "react-bootstrap";
-import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { userContext } from "../../App";
-import firebaseConfig from "../firebase.config";
+import {
+  firebaseInitializeApp,
+  handleFacebookSignIn,
+  handleGoogleSignIn,
+  userCreateUserWithEmailAndPassword,
+  userSignInWithEmailAndPassword,
+} from "./LoginHelper";
 
-initializeApp(firebaseConfig);
+firebaseInitializeApp();
 
-function Login({Component, auth,...rest}) {
+function Login({ Component, auth, ...rest }) {
   const [newUser, setNewUser] = useState(false);
   const [user, setUser] = useState({
     isSignedIn: false,
@@ -31,48 +26,28 @@ function Login({Component, auth,...rest}) {
 
   const [loggedInUser, setLoggedInUser] = useContext(userContext);
   const navigate = useNavigate();
-  const googleProvider = new GoogleAuthProvider();
-  const FbProvider = new FacebookAuthProvider();
 
-  const handleGoogleSignIn = () => {
-    const auth = getAuth();
-    signInWithPopup(auth, googleProvider)
-      .then((result) => {
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        const token = credential.accessToken;
-        const { displayName, email, photoURL } = result.user;
-        const signedInUser = {
-          isSignedIn: true,
-          name: displayName,
-          email: email,
-          image: photoURL,
-        };
-        setUser(signedInUser);
-      })
-      .catch((error) => {
-        const errorMessage = error.message;
-        setUser(errorMessage);
-      });
+  const FacebookSignIn = () => {
+    handleFacebookSignIn().then((res) => {
+      handleResponses(res, true);
+    });
   };
-  // google login end
-  // google logout start
+  const GoogleSignIn = () => {
+    handleGoogleSignIn().then((res) => {
+      handleResponses(res, true);
+    });
+  };
   const handleGoogleSignOut = () => {
-    const auth = getAuth();
-    signOut(auth)
-      .then(() => {
-        const userSignOut = {
-          isSignedIn: false,
-          name: "",
-          email: "",
-          image: "",
-        };
-        setUser(userSignOut);
-      })
-      .catch((error) => {
-        setUser(error.message);
-      });
+    handleGoogleSignOut().then((res) => {
+      handleResponses(res, false);
+    });
   };
-  // google logout end
+  const handleResponses = (res, isRouteChange) => {
+    setUser(res);
+    setLoggedInUser(res);
+    isRouteChange && navigate("/shipment");
+  };
+
   // email create user start
   const handleBlur = (e) => {
     let isValid;
@@ -93,76 +68,20 @@ function Login({Component, auth,...rest}) {
   };
   const handleEmailSubmit = (e) => {
     if (newUser && user.email && user.password) {
-      const auth = getAuth();
-      createUserWithEmailAndPassword(auth, user.email, user.password)
-        .then((userCredential) => {
-          const newUserInfo = { ...user };
-          newUserInfo.error = "";
-          newUserInfo.success = true;
-          setUser(newUserInfo);
-          updateUserName(user.name);
-        })
-        .catch((error) => {
-          const newUserInfo = { ...user };
-          newUserInfo.error = error.message;
-          newUserInfo.success = false;
-          setUser(newUserInfo);
-        });
+      userCreateUserWithEmailAndPassword(user.name, user.email, user.password)
+      .then((res) => {
+        handleResponses(res, true);
+      });
     }
     // email signed in start
     if (!newUser && user.email && user.password) {
-      const auth = getAuth();
-      signInWithEmailAndPassword(auth, user.email, user.password)
-        .then((userCredential) => {
-          const newUserInfo = { ...user };
-          newUserInfo.error = "";
-          newUserInfo.success = true;
-          setUser(newUserInfo);
-          setLoggedInUser(newUserInfo);
-          navigate('/shipment');
-          console.log("sign in info", userCredential.user);
-        })
-        .catch((error) => {
-          const newUserInfo = { ...user };
-          newUserInfo.error = error.message;
-          newUserInfo.success = false;
-          setUser(newUserInfo);
-        });
+      userSignInWithEmailAndPassword(user.email, user.password).then((res) => {
+        handleResponses(res, true);
+      });
     }
     e.preventDefault();
   };
-  const updateUserName = (name) => {
-    const auth = getAuth();
-    updateProfile(auth.currentUser, {
-      displayName: name,
-    })
-      .then(() => {
-        console.log("User name updated successfully");
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-  const handleFacebookSignIn = () => {
-    const auth = getAuth();
-    signInWithPopup(auth, FbProvider)
-      .then((result) => {
-        const user = result.user;
-        const credential = FacebookAuthProvider.credentialFromResult(result);
-        const accessToken = credential.accessToken;
-        console.log(user);
-        setUser(user)
-        // ...
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        const email = error.email;
-        const credential = FacebookAuthProvider.credentialFromError(error);
-        console.log(errorMessage);
-        // ...
-      });
-  };
+
   return (
     <div className="login">
       {/* <p>Name: {user.name}</p>
@@ -179,7 +98,7 @@ function Login({Component, auth,...rest}) {
         </p>
       )}
       {user.isSignedIn && (
-        <div style={{margin:"10px"}}>
+        <div style={{ margin: "10px" }}>
           <p>
             <strong>User Name:</strong> {user.name}
           </p>
@@ -194,12 +113,12 @@ function Login({Component, auth,...rest}) {
           Google Sign Out
         </Button>
       ) : (
-        <Button onClick={handleGoogleSignIn} variant="success">
+        <Button onClick={GoogleSignIn} variant="success">
           Google Sign In
         </Button>
       )}{" "}
       <br /> <br />
-      <Button onClick={handleFacebookSignIn} variant="success">
+      <Button onClick={FacebookSignIn} variant="success">
         Facebook Sign In
       </Button>
       <br /> <br />
@@ -224,7 +143,7 @@ function Login({Component, auth,...rest}) {
             required
           />
         )}
-        <br /> 
+        <br />
         <input
           onBlur={handleBlur}
           id="standard-basic"
@@ -235,7 +154,7 @@ function Login({Component, auth,...rest}) {
           className="form-control"
           required
         />
-        <br /> 
+        <br />
         <input
           onBlur={handleBlur}
           id="standard-password-input"
@@ -246,7 +165,7 @@ function Login({Component, auth,...rest}) {
           className="form-control"
           required
         />{" "}
-        <br /> 
+        <br />
         {newUser ? (
           <Button type="submit" variant="success">
             Sign Up

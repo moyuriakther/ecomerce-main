@@ -72,3 +72,13 @@
 .product-description h4{
   color: blue;
 }
+.login{
+  text-align: center;
+  margin: 0 auto;
+  margin-top: 50px;
+}
+.login form{
+  width: 60%;
+  margin: 0 auto;
+
+}
