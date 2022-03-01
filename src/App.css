@@ -80,5 +80,9 @@
 .login form{
   width: 60%;
   margin: 0 auto;
-
+}
+.inventoryForm{
+  text-align: center;
+  margin: 0 auto;
+  margin-top: 50px;
 }

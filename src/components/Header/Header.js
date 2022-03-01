@@ -1,10 +1,11 @@
 import React, { useContext } from "react";
+import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { userContext } from "../../App";
 import logo from "../../images/logo.png";
 
 const Header = () => {
-  const [loggedInUser] = useContext(userContext)
+  const [loggedInUser, setLoggedInUser] = useContext(userContext)
   return (
     <div className="header">
       <img src={logo} alt="" /> <p>{loggedInUser.email}</p>
@@ -12,6 +13,7 @@ const Header = () => {
         <Link to="/shop">Shop</Link>
         <Link to="/review">Order Review</Link>
         <Link to="/inventory">Manage Inventory</Link>
+        <Button onClick={() => setLoggedInUser({})} variant="success">Sign Out</Button>
       </nav>
     </div>
   );
